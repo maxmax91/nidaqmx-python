@@ -517,6 +517,38 @@ class Task(object):
 
         return is_task_done.value
 
+    def perform_bridge_offset_nulling(self, channels = ''):
+        """
+        Performs a bridge offset nulling calibration on the channels in the task. If the task measures both 
+        bridge-based sensors and non-bridge-based sensors, specify the names of the channels that measure 
+        bridge-based sensors in the channel parameter.
+        In a presistent task, it must be saved to apply changes permantently.
+        
+        Args:
+            channels (string):
+                A subset of virtual channels in the task that you want to calibrate. 
+                Use this parameter if you do not want to calibrate all the channels in the task
+                or if some channels in the task measure non-bridge-based sensors.
+        
+        Returns: 
+            int:
+            The error code returned by the function in the event of an error or warning. A value 
+            of 0 indicates success. A positive value indicates a warning. A negative value indicates an error.
+        """
+        cfunc = lib_importer.windll.DAQmxPerformBridgeOffsetNullingCal
+
+        if cfunc.argtypes is None:
+            with cfunc.arglock:
+                if cfunc.argtypes is None:
+                    cfunc.argtypes = [
+                        lib_importer.task_handle,
+                        ctypes_byte_str
+                        ]
+
+        code = cfunc( self._handle, channels )
+        return code
+    
+    
     def read(self, number_of_samples_per_channel=NUM_SAMPLES_UNSET,
              timeout=10.0):
         """
